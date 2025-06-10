@@ -1,0 +1,5 @@
+.DS_Store
+gatling/gatling.zip
+gatling/gatling.zip
+gatling/**/results/
+*.log
