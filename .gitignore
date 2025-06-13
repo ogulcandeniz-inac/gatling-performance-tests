@@ -1,0 +1,15 @@
+.DS_Store
+gatling/gatling.zip
+gatling/gatling.zip
+gatling/**/results/
+*.log
+
+gatling/gatling-charts-highcharts-bundle-*/bin/
+gatling/gatling-charts-highcharts-bundle-*/conf/
+gatling/gatling-charts-highcharts-bundle-*/lib/
+gatling/gatling-charts-highcharts-bundle-*/target/
+gatling/**/results/
+gatling/gatling.zip
+
+.DS_Store
+*.log
