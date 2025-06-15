@@ -1,0 +1,56 @@
+name: Gatling CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  perf-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Temurin 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Cache Gatling bundle
+      id: bundle-cache
+      uses: actions/cache@v4
+      with:
+        path: gatling/
+        key: gatling-3.9.5-${{ runner.os }}
+
+    - name: Download Gatling 3.9.5
+      if: steps.bundle-cache.outputs.cache-hit != 'true'
+      run: |
+        curl -L -o gatling.zip \
+          https://repo1.maven.org/maven2/io/gatling/highcharts/\
+          gatling-charts-highcharts-bundle/3.9.5/\
+          gatling-charts-highcharts-bundle-3.9.5-bundle.zip
+        unzip gatling.zip -d gatling && rm gatling.zip
+
+    - name: Add sample image
+      run: |
+        mkdir -p gatling/**/user-files/resources/images
+        echo "dummy" > gatling/**/user-files/resources/images/sample.jpg
+
+    - name: Execute Petstore CRUD suite
+      run: |
+        cd gatling/gatling-charts-highcharts-bundle-3.9.5/bin
+        ./gatling.sh -s simulations.PetstoreCRUDSimulation -nr -rf ${{ 
+github.workspace }}/results
+
+    - name: Publish HTML report
+      uses: actions/upload-artifact@v4
+      with:
+        name: gatling-report
+        path: results/
+
+
