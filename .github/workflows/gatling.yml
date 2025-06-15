@@ -22,10 +22,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Download Gatling bundle
+        run: |
+          curl -L -o gatling.zip https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
+          unzip gatling.zip -d gatling
+          rm gatling.zip
+
       - name: Add sample image for upload
         run: |
-          mkdir -p gatling/**/user-files/resources/images
-          echo "dummy" > gatling/**/user-files/resources/images/sample.jpg
+          mkdir -p gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/resources/images
+          echo "dummy" > gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/resources/images/sample.jpg
+
+      - name: Copy simulation files
+        run: |
+          cp -r gatling-performance-tests/user-files gatling/gatling-charts-highcharts-bundle-3.9.5/
 
       - name: Run Gatling Simulation
         run: |
