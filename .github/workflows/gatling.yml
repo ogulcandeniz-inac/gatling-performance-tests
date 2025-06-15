@@ -20,17 +20,25 @@ jobs:
       - name: Download Gatling bundle
         run: |
           wget -O gatling-bundle.zip \
-            https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
+            https://repo1.maven.org/maven2/io/gatling/highcharts/\
+gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
           unzip gatling-bundle.zip -d gatling
+
+      - name: Debug Source Simulations Dir
+        run: |
+          echo "== List src/gatling/scala/simulations =="
+          ls -l src/gatling/scala/simulations || echo "DIR NOT FOUND!"
 
       - name: Copy Scala simulations into bundle
         run: |
           mkdir -p gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations
-          cp src/gatling/scala/simulations/*.scala \
-             gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations/
+          cp -v src/gatling/scala/simulations/*.scala \
+             gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations/ \
+          || echo "🛑 No .scala files copied!"
 
-      - name: Verify simulations
+      - name: Verify Bundle Simulations
         run: |
+          echo "== List bundle/user-files/simulations =="
           ls -l gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations
 
       - name: Run Petstore CRUD Simulation
