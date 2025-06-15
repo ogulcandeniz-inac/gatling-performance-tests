@@ -23,6 +23,12 @@ jobs:
             https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
           unzip gatling-bundle.zip -d gatling
 
+      - name: Copy Scala simulations into bundle
+        run: |
+          mkdir -p gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations
+          cp src/gatling/scala/simulations/*.scala \
+             gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations/
+
       - name: Verify simulations
         run: |
           ls -l gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations
