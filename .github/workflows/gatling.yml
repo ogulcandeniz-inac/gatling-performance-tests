@@ -2,47 +2,53 @@ name: Gatling CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  gatling-test:
+  perf-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 17
+    - name: Set up Temurin 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: 17
 
-      - name: Download Gatling
-        run: |
-          curl -L -o gatling.zip https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
-          unzip gatling.zip -d gatling
-          rm gatling.zip
+    # 1) Gatling bundle indir
+    - name: Download Gatling bundle
+      run: |
+        curl -sSL -o gatling.zip \
+          https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
+        unzip -o gatling.zip -d gatling
+        rm gatling.zip
 
-      - name: Add dummy image for upload
-        run: |
-          mkdir -p gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/resources/images
-          echo "dummy" > gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/resources/images/sample.jpg
+    # 2) Kendi simülasyon ve resource dosyalarını bundle içine kopyala
+    - name: Inject simulations & resources
+      run: |
+        BUNDLE=gatling/gatling-charts-highcharts-bundle-3.9.5
+        mkdir -p "$BUNDLE/user-files/simulations" "$BUNDLE/user-files/resources/images"
+        cp -R simulations/*.scala        "$BUNDLE/user-files/simulations/"
+        cp -R resources/*                "$BUNDLE/user-files/resources/"
+        # Fallback dummy image (CI’de gerekiyorsa)
+        if [ ! -f "$BUNDLE/user-files/resources/images/sample.jpg" ]; then
+          echo "dummy" > "$BUNDLE/user-files/resources/images/sample.jpg"
+        fi
 
-      - name: Copy simulation files
-        run: |
-          cp -r gatling-performance-tests/user-files gatling/gatling-charts-highcharts-bundle-3.9.5/
+    # 3) Simülasyonu koştur
+    - name: Run Petstore CRUD simulation
+      run: |
+        cd gatling/gatling-charts-highcharts-bundle-3.9.5/bin
+        ./gatling.sh -s simulations.PetstoreCRUDSimulation -nr \
+          -rf "$GITHUB_WORKSPACE/results"
 
-      - name: Run Gatling Simulation
-        run: |
-          cd gatling/gatling-charts-highcharts-bundle-3.9.5/bin
-          ./gatling.sh \
-            -s simulations.PetstoreCRUDSimulation \
-            -nr \
-            -rf ${{ github.workspace }}/results
-
-      - name: Publish HTML Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: gatling-report
-          path: results/
+    # 4) Raporu artefakt olarak yükle
+    - name: Upload HTML report
+      uses: actions/upload-artifact@v4
+      with:
+        name: gatling-report
+        path: results/
