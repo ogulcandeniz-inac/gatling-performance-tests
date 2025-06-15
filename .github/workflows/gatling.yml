@@ -44,13 +44,12 @@ jobs:
     - name: Execute Petstore CRUD suite
       run: |
         cd gatling/gatling-charts-highcharts-bundle-3.9.5/bin
-        ./gatling.sh -s simulations.PetstoreCRUDSimulation -nr -rf ${{ 
-github.workspace }}/results
+        ./gatling.sh -s simulations.PetstoreCRUDSimulation -nr -rf "${{ 
+github.workspace }}/results"
 
     - name: Publish HTML report
       uses: actions/upload-artifact@v4
       with:
         name: gatling-report
         path: results/
-
 
