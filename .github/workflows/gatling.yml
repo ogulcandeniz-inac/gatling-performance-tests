@@ -4,46 +4,36 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  gatling:
+  gatling-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
+      - name: Set up Java
+        uses: actions/setup-java@v3
         with:
-          java-version: '17'
           distribution: 'temurin'
+          java-version: '17'
 
-      - name: Cache Gatling
-        uses: actions/cache@v4
-        with:
-          path: gatling/gatling-charts-highcharts-bundle-3.9.5
-          key: gatling-3.9.5
-
-      - name: Download and setup Gatling
+      - name: Add sample image for upload
         run: |
-          mkdir -p gatling
-          curl -L https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip -o gatling.zip
-          unzip gatling.zip -d gatling
-          rm gatling.zip
+          mkdir -p gatling/**/user-files/resources/images
+          echo "dummy" > gatling/**/user-files/resources/images/sample.jpg
 
-      - name: Prepare simulation resources
-        run: |
-          mkdir -p gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/resources/images
-          echo "dummy" > gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/resources/images/sample.jpg
-
-      - name: Run Gatling Petstore CRUD Simulation
+      - name: Run Gatling Simulation
         run: |
           cd gatling/gatling-charts-highcharts-bundle-3.9.5/bin
-          ./gatling.sh -s simulations.PetstoreCRUDSimulation -nr -rf results
+          ./gatling.sh -s simulations.PetstoreCRUDSimulation -nr -rf ${{ github.workspace }}/results
 
-      - name: Publish Gatling HTML Report
+      - name: Publish HTML Report
         uses: actions/upload-artifact@v4
         with:
           name: gatling-report
-          path: gatling/gatling-charts-highcharts-bundle-3.9.5/bin/results/
+          path: results/
