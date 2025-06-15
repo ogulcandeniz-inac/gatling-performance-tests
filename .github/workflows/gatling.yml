@@ -19,9 +19,7 @@ jobs:
 
       - name: Download Gatling bundle
         run: |
-          wget -O gatling-bundle.zip \
-            https://repo1.maven.org/maven2/io/gatling/highcharts/\
-            gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
+          wget -O gatling-bundle.zip https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
           unzip gatling-bundle.zip -d gatling
 
       - name: Debug Source Simulations Dir
