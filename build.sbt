@@ -1,12 +1,14 @@
 name := "gatling-performance-tests"
 
-version := "0.1"
+version := "0.1.0"
 
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.12"
 
-enablePlugins(io.gatling.sbt.GatlingPlugin)
+enablePlugins(GatlingPlugin)
 
 libraryDependencies ++= Seq(
-  "io.gatling" % "gatling-core" % "3.9.4",
-  "io.gatling" % "gatling-http" % "3.9.4"
+  "io.gatling" %% "gatling-test-framework" % "3.9.5",
+  "io.gatling" %% "gatling-core"           % "3.9.5"
 )
+
+unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "gatling" / "scala"
