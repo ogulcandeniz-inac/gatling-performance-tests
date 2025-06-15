@@ -11,57 +11,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --- Checkout 
-----------------------------------------------------------
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --- JDK 17 
-------------------------------------------------------------
-      - name: Set up Temurin 17
+      - name: Set up Java 17 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # --- Gatling bundle cache 
----------------------------------------------
       - name: Cache Gatling bundle
-        id: cache
+        id: cache-gatling
         uses: actions/cache@v4
         with:
-          path: gatling                      # folder to cache
+          path: gatling
           key: gatling-3.9.5-${{ runner.os }}
 
-      # --- Download bundle (only if cache miss) 
------------------------------
-      - name: Download Gatling 3.9.5
-        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Download & unpack Gatling if cache miss
+        if: steps.cache-gatling.outputs.cache-hit != 'true'
         run: |
-          curl -L -o gatling.zip \
-            
+          curl -L -o gatling.zip 
 https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
           unzip gatling.zip -d gatling
           rm gatling.zip
 
-      # --- Dummy image for upload step 
---------------------------------------
-      - name: Add sample image
+      - name: Ensure dummy image for upload tests
         run: |
           mkdir -p gatling/*/user-files/resources/images
           echo "dummy" > gatling/*/user-files/resources/images/sample.jpg
 
-      # --- Run simulation 
-----------------------------------------------------
-      - name: Execute Petstore CRUD suite
+      - name: Run Petstore CRUD simulation
         run: |
           cd gatling/gatling-charts-highcharts-bundle-3.9.5/bin
-          ./gatling.sh -s simulations.PetstoreCRUDSimulation -nr -rf "${{ 
-github.workspace }}/results"
+          ./gatling.sh -s simulations.PetstoreCRUDSimulation -nr -rf ${{ 
+github.workspace }}/results
 
-      # --- Publish HTML report 
-----------------------------------------------
-      - name: Upload Gatling HTML report
+      - name: Upload HTML report
         uses: actions/upload-artifact@v4
         with:
           name: gatling-report
