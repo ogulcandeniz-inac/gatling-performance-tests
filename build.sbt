@@ -11,4 +11,5 @@ libraryDependencies ++= Seq(
   "io.gatling" %% "gatling-core"           % "3.9.5"
 )
 
-unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "gatling" / "scala"
+// Update source directory configuration
+sourceDirectory in Test := baseDirectory.value / "src" / "test"
