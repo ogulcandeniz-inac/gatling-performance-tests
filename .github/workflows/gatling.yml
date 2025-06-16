@@ -17,10 +17,20 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Download Gatling bundle
+      - name: Download & unzip Gatling bundle
         run: |
-          wget -O gatling-bundle.zip https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
+          wget -O gatling-bundle.zip \
+            https://repo1.maven.org/maven2/io/gatling/highcharts/\
+gatling-charts-highcharts-bundle/3.9.5/\
+gatling-charts-highcharts-bundle-3.9.5-bundle.zip
           unzip gatling-bundle.zip -d gatling
+
+      - name: Determine actual bundle directory name
+        id: bundle_dir
+        run: |
+          # untar’dan sonra oluşan tek dizini alıyoruz
+          B=$(ls gatling | grep 'gatling-charts-highcharts-bundle')
+          echo "bundle=$B" >> $GITHUB_OUTPUT
 
       - name: Debug Source Simulations Dir
         run: |
@@ -29,18 +39,27 @@ jobs:
 
       - name: Copy Scala simulations into bundle
         run: |
-          mkdir -p gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations
+          BDIR=gatling/${{ steps.bundle_dir.outputs.bundle }}
+          mkdir -p $BDIR/user-files/simulations
           cp -v src/gatling/scala/simulations/*.scala \
-            gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations/ \
+            $BDIR/user-files/simulations/ \
           || echo "🛑 No .scala files copied!"
+
+      - name: Copy CSV data into bundle (opsiyonel)
+        run: |
+          BDIR=gatling/${{ steps.bundle_dir.outputs.bundle }}
+          mkdir -p $BDIR/user-files/data
+          cp -v user-files/data/*.csv \
+            $BDIR/user-files/data/ \
+          || echo "🛑 No .csv files copied!"
 
       - name: Verify Bundle Simulations
         run: |
-          echo "== List bundle/user-files/simulations =="
-          ls -l gatling/gatling-charts-highcharts-bundle-3.9.5/user-files/simulations
+          echo "== List $BDIR/user-files/simulations =="
+          ls -l gatling/${{ steps.bundle_dir.outputs.bundle }}/user-files/simulations
 
       - name: Run Petstore CRUD Simulation
-        working-directory: gatling/gatling-charts-highcharts-bundle-3.9.5/bin
+        working-directory: gatling/${{ steps.bundle_dir.outputs.bundle }}/bin
         run: |
           ./gatling.sh \
             -s simulations.PetstoreCRUDSimulation \
