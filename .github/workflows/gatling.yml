@@ -22,6 +22,18 @@ jobs:
           wget -O gatling-bundle.zip https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
           unzip gatling-bundle.zip -d gatling
 
+      - name: Create Simulation Directory Structure
+        run: |
+          mkdir -p src/test/scala/simulations
+
+      - name: Move Simulation Files
+        run: |
+          if [ -d "gatling-performance-tests/src/gatling/scala/simulations" ]; then
+            mv gatling-performance-tests/src/gatling/scala/simulations/*.scala src/test/scala/simulations/
+          elif [ -d "src/gatling/scala/simulations" ]; then
+            mv src/gatling/scala/simulations/*.scala src/test/scala/simulations/
+          fi
+
       - name: Debug Source Simulations Dir
         run: |
           echo "== List src/test/scala/simulations =="
